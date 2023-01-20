@@ -1,317 +1,246 @@
-import pygame
-from pygame import mixer
-from pygame.locals import *
+import turtle
+import os
+import math
 import random
+import re
+
+# To make the code and the game my own i need to add a level system and make the bullet balance off of the walls atleast 3 times
+player = "player.gif"
+invader = "invader.gif"
+# bg = "space_invaders_background.gif"
+
+# Render sceen
+sc = turtle.Screen()
+sc.bgcolor("black")
+
+
+# score
+score = 0
+score_creater = turtle.Turtle()
+score_creater.speed(0)
+score_creater.color("white")
+score_creater.penup()
+score_creater.setposition(-180, 180)
+scoreDisplay = "Score: %s" % score
+score_creater.write(scoreDisplay, align="left")
+score_creater.hideturtle()
+
+# player code
+sc.addshape(player)
+pc = turtle.Turtle()
+pc.shape(player)
+pc.setheading(90)
+pc.setposition(0,-175)
+pc.speed(0)
+playerspeed=15
+
+# move player left or right
+def left():
+    x = pc.xcor()
+    x -= playerspeed
+    if x < -175:
+        x = -175
+    pc.setx(x)
+
+def right():
+    x = pc.xcor()
+    x += playerspeed
+    if x > 175:
+        x = 175
+    pc.setx(x)
+    
+# sc.onkey(left, "Left")
+# sc.onkey(right, "Right")
+# sc.listen()
 
+# # bullet = turtle.Turtle()
+# # bullet.color('yellow')
+# # bullet.setheading(90)
+# # bullet.penup()
+# # bullet.speed
+# # bullet.hideturtle()
+# # bulletspeed = 20
 
-pygame.mixer.pre_init(44100, -16, 2, 512)
-mixer.init()
-pygame.init()
+# # bullet = turtle.Turtle()
+# # bullet.color("yellow")
+# # bullet.shape("triangle")
+# # bullet.penup()
+# # bullet.speed(0)
+# # bullet.setheading(90)
+# # bullet.hideturtle()
 
+# # bulletspeed = 20
 
-#define fps
-clock = pygame.time.Clock()
-fps = 60
 
+class Enemy(turtle.Turtle):
+  # (self, name, x, y)
+  def __init__(self, name, x, y):
+    self.name
+    turtle.Turtle.__init__(self)
+    self.penup()
+    sc.addshape(invader)
+    self.shape(invader)
+    self.speed(0)
+    self.setheading(90)
+    self.setposition(x, y)
+    
 
-screen_width = 600
-screen_height = 800
 
-screen = pygame.display.set_mode((screen_width, screen_height))
-pygame.display.set_caption('Space Invanders')
 
 
-#define fonts
-font30 = pygame.font.SysFont('Constantia', 30)
-font40 = pygame.font.SysFont('Constantia', 40)
+# row1 = Enemy()
+# row1.setposition(-125, 150)
 
+# row2 = Enemy()
+# row2.setposition(-100, 150)
 
-#load sounds
-explosion_fx = pygame.mixer.Sound("img/explosion.wav")
-explosion_fx.set_volume(0.25)
+# row3 = Enemy()
+# row3.setposition(-75, 150)
 
-explosion2_fx = pygame.mixer.Sound("img/explosion2.wav")
-explosion2_fx.set_volume(0.25)
+# row4 = Enemy()
+# row4.setposition(-50, 150)
 
-laser_fx = pygame.mixer.Sound("img/laser.wav")
-laser_fx.set_volume(0.25)
+# row5 = Enemy()
+# row5.setposition(-25,150)
 
+# row6 = Enemy()
+# row6.setposition(0, 150)
 
-#define game variables
-rows = 5
-cols = 5
-alien_cooldown = 1000#bullet cooldown in milliseconds
-last_alien_shot = pygame.time.get_ticks()
-countdown = 3
-last_count = pygame.time.get_ticks()
-game_over = 0#0 is no game over, 1 means player has won, -1 means player has lost
+# row7 = Enemy()
+# row7.setposition(25, 150)
 
-#define colours
-red = (255, 0, 0)
-green = (0, 255, 0)
-white = (255, 255, 255)
+# row8 = Enemy()
+# row8.setposition(50, 150)
 
+# row9 = Enemy()
+# row9.setposition(75, 150)
 
+# row01 = Enemy()
+# row01.setposition(100,150)
 
-#load image
-bg = pygame.image.load("img/bg.png")
 
-def draw_bg():
-	screen.blit(bg, (0, 0))
 
+# # row 2
+# row21 = Enemy()
+# row21.setposition(-125, 125)
 
-#define function for creating text
-def draw_text(text, font, text_col, x, y):
-	img = font.render(text, True, text_col)
-	screen.blit(img, (x, y))
+# row22 = Enemy()
+# row22.setposition(-100, 125)
 
+# row23 = Enemy()
+# row23.setposition(-75, 125)
 
+# row24 = Enemy()
+# row24.setposition(-50, 125)
 
-#create spaceship class
-class Spaceship(pygame.sprite.Sprite):
-	def __init__(self, x, y, health):
-		pygame.sprite.Sprite.__init__(self)
-		self.image = pygame.image.load("img/spaceship.png")
-		self.rect = self.image.get_rect()
-		self.rect.center = [x, y]
-		self.health_start = health
-		self.health_remaining = health
-		self.last_shot = pygame.time.get_ticks()
+# row25 = Enemy()
+# row25.setposition(-25,125)
 
+# row26 = Enemy()
+# row26.setposition(0, 125)
 
-	def update(self):
-		#set movement speed
-		speed = 8
-		#set a cooldown variable
-		cooldown = 500 #milliseconds
-		game_over = 0
+# row27 = Enemy()
+# row27.setposition(25, 125)
 
+# row28 = Enemy()
+# row28.setposition(50, 125)
 
-		#get key press
-		key = pygame.key.get_pressed()
-		if key[pygame.K_LEFT] and self.rect.left > 0:
-			self.rect.x -= speed
-		if key[pygame.K_RIGHT] and self.rect.right < screen_width:
-			self.rect.x += speed
+# row29 = Enemy()
+# row29.setposition(75, 125)
 
-		#record current time
-		time_now = pygame.time.get_ticks()
-		#shoot
-		if key[pygame.K_SPACE] and time_now - self.last_shot > cooldown:
-			laser_fx.play()
-			bullet = Bullets(self.rect.centerx, self.rect.top)
-			bullet_group.add(bullet)
-			self.last_shot = time_now
+# row02 = Enemy()
+# row02.setposition(100,125)
 
 
-		#update mask
-		self.mask = pygame.mask.from_surface(self.image)
-
-
-		#draw health bar
-		pygame.draw.rect(screen, red, (self.rect.x, (self.rect.bottom + 10), self.rect.width, 15))
-		if self.health_remaining > 0:
-			pygame.draw.rect(screen, green, (self.rect.x, (self.rect.bottom + 10), int(self.rect.width * (self.health_remaining / self.health_start)), 15))
-		elif self.health_remaining <= 0:
-			explosion = Explosion(self.rect.centerx, self.rect.centery, 3)
-			explosion_group.add(explosion)
-			self.kill()
-			game_over = -1
-		return game_over
-
-
-
-#create Bullets class
-class Bullets(pygame.sprite.Sprite):
-	def __init__(self, x, y):
-		pygame.sprite.Sprite.__init__(self)
-		self.image = pygame.image.load("img/bullet.png")
-		self.rect = self.image.get_rect()
-		self.rect.center = [x, y]
-
-	def update(self):
-		self.rect.y -= 5
-		if self.rect.bottom < 0:
-			self.kill()
-		if pygame.sprite.spritecollide(self, alien_group, True):
-			self.kill()
-			explosion_fx.play()
-			explosion = Explosion(self.rect.centerx, self.rect.centery, 2)
-			explosion_group.add(explosion)
-
-
-
-
-#create Aliens class
-class Aliens(pygame.sprite.Sprite):
-	def __init__(self, x, y):
-		pygame.sprite.Sprite.__init__(self)
-		self.image = pygame.image.load("img/alien" + str(random.randint(1, 5)) + ".png")
-		self.rect = self.image.get_rect()
-		self.rect.center = [x, y]
-		self.move_counter = 0
-		self.move_direction = 1
+# # row 3
+# row31 = Enemy()
+# row31.setposition(-125, 100)
 
-	def update(self):
-		self.rect.x += self.move_direction
-		self.move_counter += 1
-		if abs(self.move_counter) > 75:
-			self.move_direction *= -1
-			self.move_counter *= self.move_direction
+# row32 = Enemy()
+# row32.setposition(-100, 100)
 
+# row33 = Enemy()
+# row33.setposition(-75, 100)
 
+# row34 = Enemy()
+# row34.setposition(-50, 100)
 
-#create Alien Bullets class
-class Alien_Bullets(pygame.sprite.Sprite):
-	def __init__(self, x, y):
-		pygame.sprite.Sprite.__init__(self)
-		self.image = pygame.image.load("img/alien_bullet.png")
-		self.rect = self.image.get_rect()
-		self.rect.center = [x, y]
+# row35 = Enemy()
+# row35.setposition(-25,100)
 
-	def update(self):
-		self.rect.y += 2
-		if self.rect.top > screen_height:
-			self.kill()
-		if pygame.sprite.spritecollide(self, spaceship_group, False, pygame.sprite.collide_mask):
-			self.kill()
-			explosion2_fx.play()
-			#reduce spaceship health
-			spaceship.health_remaining -= 1
-			explosion = Explosion(self.rect.centerx, self.rect.centery, 1)
-			explosion_group.add(explosion)
-
-
-
-
-#create Explosion class
-class Explosion(pygame.sprite.Sprite):
-	def __init__(self, x, y, size):
-		pygame.sprite.Sprite.__init__(self)
-		self.images = []
-		for num in range(1, 6):
-			img = pygame.image.load(f"img/exp{num}.png")
-			if size == 1:
-				img = pygame.transform.scale(img, (20, 20))
-			if size == 2:
-				img = pygame.transform.scale(img, (40, 40))
-			if size == 3:
-				img = pygame.transform.scale(img, (160, 160))
-			#add the image to the list
-			self.images.append(img)
-		self.index = 0
-		self.image = self.images[self.index]
-		self.rect = self.image.get_rect()
-		self.rect.center = [x, y]
-		self.counter = 0
-
-
-	def update(self):
-		explosion_speed = 3
-		#update explosion animation
-		self.counter += 1
-
-		if self.counter >= explosion_speed and self.index < len(self.images) - 1:
-			self.counter = 0
-			self.index += 1
-			self.image = self.images[self.index]
+# row36 = Enemy()
+# row36.setposition(0, 100)
 
-		#if the animation is complete, delete explosion
-		if self.index >= len(self.images) - 1 and self.counter >= explosion_speed:
-			self.kill()
+# row37 = Enemy()
+# row37.setposition(25, 100)
 
+# row38 = Enemy()
+# row38.setposition(50, 100)
 
+# row39 = Enemy()
+# row39.setposition(75, 100)
 
+# row03 = Enemy()
+# row03.setposition(100,100)
 
-#create sprite groups
-spaceship_group = pygame.sprite.Group()
-bullet_group = pygame.sprite.Group()
-alien_group = pygame.sprite.Group()
-alien_bullet_group = pygame.sprite.Group()
-explosion_group = pygame.sprite.Group()
 
+# # row 4 
+# row41 = Enemy()
+# row41.setposition(-125, 75)
 
-def create_aliens():
-	#generate aliens
-	for row in range(rows):
-		for item in range(cols):
-			alien = Aliens(100 + item * 100, 100 + row * 70)
-			alien_group.add(alien)
+# row42 = Enemy()
+# row42.setposition(-100, 75)
 
-create_aliens()
+# row43 = Enemy()
+# row43.setposition(-75, 75)
 
+# row44 = Enemy()
+# row44.setposition(-50, 75)
 
-#create player
-spaceship = Spaceship(int(screen_width / 2), screen_height - 100, 3)
-spaceship_group.add(spaceship)
+# row45 = Enemy()
+# row45.setposition(-25,75)
 
+# row46 = Enemy()
+# row46.setposition(0, 75)
 
+# row47 = Enemy()
+# row47.setposition(25, 75)
 
-run = True
-while run:
+# row48 = Enemy()
+# row48.setposition(50, 75)
 
-	clock.tick(fps)
+# row49 = Enemy()
+# row49.setposition(75, 75)
 
-	#draw background
-	draw_bg()
+# row04 = Enemy()
+# row04.setposition(100,75)
 
+# throws all into arrays by rows
+first_row = ['row1', 'row2', 'row3', 'row4', 'row5', 'row6', 'row7', 'row8', 'row9', 'row01']
+second_row = ['row21', 'row22', 'row23', 'row24', 'row25', 'row26', 'row27', 'row28', 'row29', 'row02']
+third_row = ['row31', 'row32', 'row33', 'row34', 'row35', 'row36', 'row37', 'row38', 'row39', 'row03']
+fourth_row =['row41', 'row42', 'row43', 'row44', 'row45', 'row46', 'row47', 'row48', 'row49', 'row04']
 
-	if countdown == 0:
-		#create random alien bullets
-		#record current time
-		time_now = pygame.time.get_ticks()
-		#shoot
-		if time_now - last_alien_shot > alien_cooldown and len(alien_bullet_group) < 5 and len(alien_group) > 0:
-			attacking_alien = random.choice(alien_group.sprites())
-			alien_bullet = Alien_Bullets(attacking_alien.rect.centerx, attacking_alien.rect.bottom)
-			alien_bullet_group.add(alien_bullet)
-			last_alien_shot = time_now
+# allows me to refer to each variable when calling a dictionary by name
+arrayDict1 = [Enemy(name=name, x=0, y=150) for name in first_row]
+arrayDict2 = [Enemy(name=name, x=0, y=125) for name in second_row]
+arrayDict3 = [Enemy(name=name, x=0, y=100) for name in third_row]
+arrayDict4 = [Enemy(name=name, x=0, y=75) for name in fourth_row]
+rowList = [arrayDict1, arrayDict2, arrayDict3, arrayDict4]
 
-		#check if all the aliens have been killed
-		if len(alien_group) == 0:
-			game_over = 1
 
-		if game_over == 0:
-			#update spaceship
-			game_over = spaceship.update()
+# supposed to allow me to loop through the entire collection and assign positions accordingly. 
+# needs work
 
-			#update sprite groups
-			bullet_group.update()
-			alien_group.update()
-			alien_bullet_group.update()
-		else:
-			if game_over == -1:
-				draw_text('GAME OVER!', font40, white, int(screen_width / 2 - 100), int(screen_height / 2 + 50))
-			if game_over == 1:
-				draw_text('YOU WIN!', font40, white, int(screen_width / 2 - 100), int(screen_height / 2 + 50))
+for position in range(4):
+  
+  x=-125
+  
+  for index in rowList[position]:
+    number =+ 1
+    y=150 - (position * 25)
+    index.setposition(x, y)
+    
+  # return x+=25
+    
 
-	if countdown > 0:
-		draw_text('GET READY!', font40, white, int(screen_width / 2 - 110), int(screen_height / 2 + 50))
-		draw_text(str(countdown), font40, white, int(screen_width / 2 - 10), int(screen_height / 2 + 100))
-		count_timer = pygame.time.get_ticks()
-		if count_timer - last_count > 1000:
-			countdown -= 1
-			last_count = count_timer
-
-
-	#update explosion group	
-	explosion_group.update()
-
-
-	#draw sprite groups
-	spaceship_group.draw(screen)
-	bullet_group.draw(screen)
-	alien_group.draw(screen)
-	alien_bullet_group.draw(screen)
-	explosion_group.draw(screen)
-
-
-	#event handlers
-	for event in pygame.event.get():
-		if event.type == pygame.QUIT:
-			run = False
-
-
-	pygame.display.update()
-
-pygame.quit()
